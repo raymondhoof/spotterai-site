@@ -1085,8 +1085,16 @@
       transition: transform .3s ease;
     }
     .sticky.show { transform: translateY(0); }
+    .sticky.dismissed { display: none; }
     .sticky p { font-size: 14px; color: var(--gray-2); }
     .sticky strong { color: var(--off-black); }
+    .sticky-close {
+      background: transparent; border: 0; cursor: pointer;
+      color: var(--gray-3); font-size: 22px; line-height: 1;
+      padding: 4px 8px; margin-left: 4px; border-radius: 6px;
+      transition: color .15s, background .15s;
+    }
+    .sticky-close:hover { color: var(--off-black); background: var(--gray-5); }
 
     /* ── ANIMATIONS ──────────────────────────────────────────── */
     .fade-up {
@@ -1807,6 +1815,7 @@
 <div class="sticky" id="sticky">
   <p><strong>Spotter AI</strong> &mdash; 14-day free trial, no credit card required</p>
   <a href="https://calendly.com/spotterai/15min" target="_blank" rel="noopener" class="btn btn-dark" style="font-size:14px;padding:10px 20px;">Book a Call &rarr;</a>
+  <button type="button" class="sticky-close" id="sticky-close" aria-label="Dismiss">&times;</button>
 </div>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
@@ -2008,9 +2017,26 @@
   document.querySelectorAll('.fade-up').forEach(el => scrollObs.observe(el));
 
   // Sticky bar
-  window.addEventListener('scroll', () => {
-    document.getElementById('sticky').classList.toggle('show', window.scrollY > 500);
-  }, { passive: true });
+  (function () {
+    var bar = document.getElementById('sticky');
+    var closeBtn = document.getElementById('sticky-close');
+    var dismissed = false;
+    try { dismissed = localStorage.getItem('stickyDismissed') === '1'; } catch (e) {}
+    if (dismissed) {
+      bar.classList.add('dismissed');
+    } else {
+      window.addEventListener('scroll', function () {
+        bar.classList.toggle('show', window.scrollY > 500);
+      }, { passive: true });
+    }
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function () {
+        bar.classList.remove('show');
+        bar.classList.add('dismissed');
+        try { localStorage.setItem('stickyDismissed', '1'); } catch (e) {}
+      });
+    }
+  })();
 
   // Nav scroll effect
   window.addEventListener('scroll', () => {
